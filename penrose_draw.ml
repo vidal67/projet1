@@ -12,17 +12,23 @@ let draw points color=
 	set_color color;
 	fill_poly pointsInt;;
 
+let add_points point1 point2 =
+    let x1, y1 = point1 in
+    let x2, y2 = point2 in
+    (x1 +. x2, y1 +. y2)
+;;
+
 (* The vertex which have an angle different from the two other vertex of
 the triangle is put in the first place of the triangle*)
 
 type triangle_type = Obtuse | Acute;;
 
-let phi = (1. +. sqrt 5) /. 2.;;
+let phi = (1. +. sqrt 5.) /. 2.;;
 
 (* Return the points that is at 1 / (1 + phi) ratio from the first point *)
 let getDividingPoint (x1, y1) (x2, y2) =
-    let x = x1 + (x1 - x2) * 1 /. (1 +. phi) in
-    let y = y1 + (y1 - y2) * 1 /. (1 +. phi) in
+    let x = x1 +. (x2 -. x1) *. 1. /. (1. +. phi) in
+    let y = y1 +. (y2 -. y1) *. 1. /. (1. +. phi) in
     (x, y)
 ;;
 
@@ -52,7 +58,7 @@ and divideObtuse generations points =
 and divideAcute generations points =
     (* Instead of cutting into three triangles, we cut into two triangles
         but in the end it will amount to the same thing *)
-    let new_point1 = getDividingPoint points.(1) points.(0) in
+    let new_point = getDividingPoint points.(1) points.(0) in
     let obtuse_triangle = [| new_point; points.(0); points.(2) |] in
     let acute_triangle = [| points.(2); new_point; points.(1) |] in
     begin
@@ -60,3 +66,12 @@ and divideAcute generations points =
         divide generations obtuse_triangle Obtuse
     end
 ;;
+
+let getAcuteTriangle size position =
+    let height = sqrt (phi *. phi -. 0.25) in
+    let shape = [| (size /. 2., height *. size); (size, 0.); (0., 0.) |] in
+    Array.map (add_points position) shape
+;;
+
+divide 8 (getAcuteTriangle 300. (100., 100.)) Acute;;
+Unix.sleep 2;;
