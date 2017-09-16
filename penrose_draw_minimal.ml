@@ -1,36 +1,18 @@
+(* This is the minimal version of the Penrose tiling do not edit It *)
+
 #load "graphics.cma";;
 #load "unix.cma";;
+open Graphics;;
+open_graph " 1280*720-0+0";;
+open Printf
 
 let floatDoublet double = match double with
 	| (a,b) -> (int_of_float a, int_of_float b);;
 
-let drawLine point1 point2 =
-    let x1, y1 = floatDoublet point1 in
-    let x2, y2 = floatDoublet point2 in
-    Graphics.moveto x1 y1;
-    Graphics.lineto x2 y2;
-;;
-
-let drawHollowPolygon points color = 
-    let points_length = Array.length points in
-    Graphics.set_color color;
-    for i=0 to points_length - 1 do
-        drawLine points.(i) points.((i + 1) mod points_length)
-    done
-;;
-
-let drawFilledPolygon points color = 
+let draw points color= 
 	let pointsInt = Array.map floatDoublet points in
-	Graphics.set_color color;
-	Graphics.fill_poly pointsInt
-;;
-
-let draw points color = 
-    (* We draw the polygon then its edges so that the edges are apparent
-        on the screen *)
-    drawFilledPolygon points color;
-    drawHollowPolygon points Graphics.black
-;;
+	set_color color;
+	fill_poly pointsInt;;
 
 let add_points point1 point2 =
     let x1, y1 = point1 in
@@ -39,7 +21,7 @@ let add_points point1 point2 =
 ;;
 
 (* The vertex which have an angle different from the two other vertex of
-    the triangle is put in the first place of the triangle*)
+the triangle is put in the first place of the triangle*)
 
 type triangle_type = Obtuse | Acute;;
 
@@ -54,8 +36,8 @@ let getDividingPoint (x1, y1) (x2, y2) =
 
 let getTriangleColor triangle_type =
     match triangle_type with
-        | Obtuse -> Graphics.green
-        | Acute -> Graphics.red
+        | Obtuse -> green
+        | Acute -> red
 ;;
 
 let rec divide generations points triangle_type =
@@ -71,7 +53,7 @@ and divideObtuse generations points =
     let acute_triangle = [| points.(2); new_point; points.(0) |] in
     let obtuse_triangle = [| new_point; points.(0); points.(1) |] in
     begin
-        divide (generations - 1) acute_triangle Acute ;
+        divide (generations - 1) acute_triangle Acute;
         divide (generations - 1) obtuse_triangle Obtuse
     end
 
@@ -93,6 +75,5 @@ let getAcuteTriangle size position =
     Array.map (add_points position) shape
 ;;
 
-Graphics.open_graph " 1280*720-0+0";;
-divide 4 (getAcuteTriangle 300. (100., 100.)) Acute;;
-Unix.sleep 2;;
+divide 8 (getAcuteTriangle 300. (100., 100.)) Acute;;
+Unix.sleep 10;;
