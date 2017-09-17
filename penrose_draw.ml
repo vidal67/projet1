@@ -1,8 +1,9 @@
 #load "graphics.cma";;
 #load "unix.cma";;
 open Graphics;;
-open_graph " 1280*720-0+0";;
+open_graph " 1280*900-0+0";;
 open Printf
+#load "unix.cma";;
 
 let floatDoublet double = match double with
 	| (a,b) -> (int_of_float a, int_of_float b);;
@@ -63,7 +64,7 @@ and divideAcute generations points =
     let acute_triangle = [| points.(2); new_point; points.(1) |] in
     begin
         divide (generations - 1) acute_triangle Acute;
-        divide generations obtuse_triangle Obtuse
+        divide generations obtuse_triangle Obtuse;
     end
 ;;
 
@@ -72,6 +73,7 @@ let getAcuteTriangle size position =
     let shape = [| (size /. 2., height *. size); (size, 0.); (0., 0.) |] in
     Array.map (add_points position) shape
 ;;
-
-divide 8 (getAcuteTriangle 300. (100., 100.)) Acute;;
-Unix.sleep 2;;
+Unix.sleep 1;;
+divide 6 (getAcuteTriangle 300. (100., 100.)) Acute;;
+Unix.sleep 1;;
+print_int 1;;
