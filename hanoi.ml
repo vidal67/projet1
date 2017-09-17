@@ -9,13 +9,15 @@ struct
 	let push x s = s.elements <- x :: s.elements
 	let pop s =
 		match s.elements with
-		h::t -> s.elements <- t; h
-		| [] -> failwith "Empty stack"
+            | h::t -> s.elements <- t; h
+            | [] -> failwith "Empty stack"
 end;;
 
 let arrays = [|Stack.create ();Stack.create ();Stack.create ()|];;
 
-for i = 5 downto 1 do  Stack.push i arrays.(0); done;;
+for i = 5 downto 1 do
+    Stack.push i arrays.(0);
+done;;
 
 
 let moves_number = ref 0;;
@@ -23,7 +25,7 @@ let increment_moves_number () = moves_number := !moves_number + 1;;
 
 let moveDisc origin destination =
     begin
-		Stack.push (Stack.pop arrays.(destination)) arrays.(origin);
+		Stack.push (Stack.pop arrays.(origin)) arrays.(destination);
         increment_moves_number ();
 
         print_string "Move a disc from ";
@@ -31,15 +33,15 @@ let moveDisc origin destination =
         print_string " to ";
         print_int destination;
         print_newline ()
-    end;;
+    end
+;;
 
 let rec hanoi n i j k =
     if n = 1 then moveDisc i j
 	else
-		hanoi (n-1) i k j;
+		hanoi (n - 1) i k j;
 		moveDisc i j;
-		hanoi (n-1) k j i;;
+		hanoi (n - 1) k j i
+;;
 
-print_string "Move a disc from ";
-	
-hanoi 5 0 2 1;;
+hanoi 4 0 2 1;;
