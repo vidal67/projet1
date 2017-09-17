@@ -34,13 +34,11 @@ let moveDisc origin destination =
         print_newline ()
     end;;
 
-let arrays = Stack.create
-
 let rec hanoi n i j k =
-	if n = 1 then Stack.push (Stack.pop arrays.(i)) arrays.(j);;
+	if n = 1 then Stack.push (Stack.pop arrays.(i)) arrays.(j)
 	else
 		hanoi (n-1) i k j;
 		hanoi 1 i j k;
 		hanoi (n-1) k j i
-		moveDisc i j;
-	done;;
+		moveDisc i j
+;;
