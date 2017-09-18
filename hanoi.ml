@@ -30,10 +30,11 @@ let drawFilledPolygon points color =
 	Graphics.fill_poly points
 ;;
 
+let number_discs = 50;;
 let number_picks = 3;;
+let time_between_frame = 0 (* In seconds *);;
 let picks_periode = 100;;
 let picks_heights = 100;;
-let number_discs = 5;;
 let disc_minimum_width = 10;;
 let disc_maximum_width = picks_periode / 2;;
 let disc_height = 100 / (number_discs + 1);;
@@ -112,8 +113,6 @@ for i = number_discs downto 1 do
     Stack.push i arrays.(0);
 done;;
 
-let time_between_frame = 1 (* In seconds *);;
-
 let redrawState () =
     Graphics.clear_graph ();
     drawPicks ();
@@ -129,13 +128,13 @@ let moveDisc origin destination =
     begin
 		Stack.push (Stack.pop arrays.(origin)) arrays.(destination);
         increment_moves_number ();
-        redrawState ();
+        (*redrawState ();
 
-        print_string "Move a disc from ";
+		print_string "Move a disc from ";
         print_int origin;
         print_string " to ";
         print_int destination;
-        print_newline ()
+        print_newline ()*)
     end
 ;;
 
@@ -152,5 +151,6 @@ let rec hanoi n i j k =
 
 Graphics.open_graph " 1280*720-0+0";;
 drawPicks ();;
+
 hanoi number_discs 0 2 1;;
-Unix.sleep 10;;
+print_int !moves_number;;

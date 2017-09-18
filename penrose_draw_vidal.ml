@@ -1,7 +1,7 @@
 #load "graphics.cma";;
 #load "unix.cma";;
 
-let nombreGenerations = 8;;
+let nombreGenerations = 9;;
 
 let greyGradient n=
 	Graphics.rgb (220*n/nombreGenerations) (220*n/nombreGenerations) (220*n/nombreGenerations);;
@@ -37,6 +37,8 @@ let drawFilledPolygon points color =
 let draw points color = 
     (* We draw the polygon then its edges so that the edges are apparent
         on the screen *)
+    Unix.sleep 1;
+
     drawFilledPolygon points color;
     drawHollowPolygon points Graphics.black
 ;;
@@ -63,8 +65,8 @@ let getDividingPoint (x1, y1) (x2, y2) =
 
 let getTriangleColor triangle_type =
     match triangle_type with
-        | Obtuse -> Graphics.black
-        | Acute -> Graphics.yellow
+        | Obtuse -> Graphics.red
+        | Acute -> Graphics.green
 ;;
 
 let rec divide generations points triangle_type =
@@ -84,7 +86,6 @@ and divideObtuse generations points =
     begin
     	let couleur = greyGradient generations in
 		draw points couleur;
-		Unix.sleep 1;
         divide (generations - 1) acute_triangle Acute ;
         divide (generations - 1) obtuse_triangle Obtuse
     end
@@ -98,7 +99,6 @@ and divideAcute generations points =
     begin
     	let couleur = greyGradient generations in
 		draw points couleur;
-		Unix.sleep 1;
         divide (generations - 1) acute_triangle Acute;
         divide generations obtuse_triangle Obtuse;
     end
@@ -113,4 +113,4 @@ let getAcuteTriangle size position =
 
 Graphics.open_graph " 1280x1720-0+0";;
 divide nombreGenerations (getAcuteTriangle 1000. (100., 100.)) Acute;;
-Unix.sleep 2;;
+Unix.sleep 20;;
