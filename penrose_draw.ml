@@ -56,7 +56,8 @@ let draw points color =
     (* We draw the polygon then its edges so that the edges are apparent
         on the screen *)
     drawFilledPolygon points color;
-    drawHollowPolygon points Graphics.black
+    drawHollowPolygon points Graphics.black;
+    Unix.sleep 1
 ;;
 
 let add_points point1 point2 =
@@ -81,8 +82,8 @@ let getDividingPoint (x1, y1) (x2, y2) =
 
 let getTriangleColor triangle_type =
     match triangle_type with
-        | Obtuse -> Graphics.red
-        | Acute -> Graphics.blue
+        | Obtuse -> Graphics.black
+        | Acute -> Graphics.white
 ;;
 
 let rec divideSimple generations points triangle_type =
@@ -175,6 +176,6 @@ let getAcuteTriangle size position =
     Array.map (add_points position) shape 
 ;;
 
-Graphics.open_graph " 1280x720-0+0";;
-divideSimple nombre_generations (getAcuteTriangle 300. (100., 100.)) Acute;;
+Graphics.open_graph " 1280x1720-0+0";;
+divideSimple nombre_generations (getAcuteTriangle 1000. (100., 100.)) Acute;;
 Unix.sleep 10;;
