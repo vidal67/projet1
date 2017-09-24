@@ -1,10 +1,10 @@
 #load "graphics.cma";;
 #load "unix.cma";;
 
-let nombre_generations = 7;;
+let number_generations = 7;;
 
 let greyGradient n =
-    let grey_value = 220 * n / nombre_generations in
+    let grey_value = 220 * n / number_generations in
 	Graphics.rgb grey_value grey_value grey_value
 ;;
 
@@ -176,5 +176,5 @@ let getAcuteTriangle size position =
 ;;
 
 Graphics.open_graph " 1280x720-0+0";;
-divideSimple nombre_generations (getAcuteTriangle 300. (100., 100.)) Acute;;
+divideSimple number_generations (getAcuteTriangle 300. (100., 100.)) Acute;;
 Unix.sleep 10;;
