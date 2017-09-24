@@ -233,29 +233,20 @@ let hanoi number_discs picks_content number_discs_to_move origin destination =
 if should_display then
     Graphics.open_graph " 1280*720-0+0";;
 
-let number_discs = 20;;
+let number_discs = 10;;
 let number_picks = 5;;
  
-let file = "hanoi2D.csv";;
-let message = ref "nombreDisques;nombrePiques;nombreCoups\n";;
+let file = "hanoi_extension.csv";;
+let content = ref "discs;picks;moves\n";;
 
 let picks_content = initializeHanoiTower number_picks number_discs;;
 
-for nbDiscs=3 to 30 do
-	for nbPick=3 to 40 do
+for nbDiscs=3 to number_discs do
+	for nbPick=3 to number_picks do
 		let picks_content = initializeHanoiTower nbPick nbDiscs in
 		moves_number := 0 ;
-		print_int !moves_number;
-		print_newline ();
 		hanoi nbDiscs picks_content nbDiscs 0 (nbPick - 1);
-		print_int nbDiscs;
-		print_newline ();
-		print_int nbPick;
-		print_newline ();
-		print_int !moves_number;
-		print_newline ();
-		print_newline ();
-		message := !message^(string_of_int nbDiscs)^";"^(string_of_int nbPick)^";"^(string_of_int !moves_number)^"\n";
+		content := !content^(string_of_int nbDiscs)^";"^(string_of_int nbPick)^";"^(string_of_int !moves_number)^"\n";
 	done;
 done;;
 
@@ -264,7 +255,7 @@ open Printf
 let () =
 (* Write message to file *)
 let oc = open_out file in    (* create or truncate file, return channel *)
-fprintf oc "%s\n" !message;   (* write something *)   
+fprintf oc "%s\n" !content;   (* write something *)   
 close_out oc;                (* flush and close the channel *)
 
 (* Read file and display the first line *)
