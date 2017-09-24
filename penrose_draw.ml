@@ -1,8 +1,31 @@
 #load "graphics.cma";;
 #load "unix.cma";;
 
+let nombre_generations = 7;;
+
+let greyGradient n =
+    let grey_value = 220 * n / nombre_generations in
+	Graphics.rgb grey_value grey_value grey_value
+;;
+
 let floatDoublet double = match double with
 	| (a,b) -> (int_of_float a, int_of_float b);;
+
+let getReverseArray a =
+    let a_length = Array.length a in
+    if a_length = 0 then
+        [||]
+    else
+    begin
+        (* We have to initialize the array with something, so we take
+            `a.(0)` *)
+        let reversed_array = Array.make a_length a.(0) in
+        for i = 0 to a_length - 1 do
+            reversed_array.(i) <- a.((a_length - 1) - i)
+        done;
+        reversed_array
+    end
+;;
 
 let drawLine point1 point2 =
     (* Draw a line between point1 and point2 *)
@@ -32,7 +55,7 @@ let drawFilledPolygon points color =
 let draw points color = 
     (* We draw the polygon then its edges so that the edges are apparent
         on the screen *)
-    (* drawFilledPolygon points color; *)
+    drawFilledPolygon points color;
     drawHollowPolygon points Graphics.black
 ;;
 
@@ -58,16 +81,15 @@ let getDividingPoint (x1, y1) (x2, y2) =
 
 let getTriangleColor triangle_type =
     match triangle_type with
-        | Obtuse -> Graphics.black
-        | Acute -> Graphics.yellow
+        | Obtuse -> Graphics.red
+        | Acute -> Graphics.blue
 ;;
 
-let rec divide generations points triangle_type =
+let rec divideSimple generations points triangle_type =
+    (* Divide a golden triangle so that the last generations of triangles
+        are of the same size *)
     if generations <= 0 then
-    begin
-		Unix.sleep 1;
-        draw points (getTriangleColor triangle_type);
-    end
+        draw points (getTriangleColor triangle_type)
     else
         match triangle_type with
             | Obtuse -> divideObtuse generations points
@@ -78,8 +100,8 @@ and divideObtuse generations points =
     let acute_triangle = [| points.(2); new_point; points.(0) |] in
     let obtuse_triangle = [| new_point; points.(0); points.(1) |] in
     begin
-        divide (generations - 1) acute_triangle Acute ;
-        divide (generations - 1) obtuse_triangle Obtuse
+        divideSimple (generations - 1) acute_triangle Acute ;
+        divideSimple (generations - 1) obtuse_triangle Obtuse
     end
 
 and divideAcute generations points =
@@ -89,18 +111,70 @@ and divideAcute generations points =
     let obtuse_triangle = [| new_point; points.(0); points.(2) |] in
     let acute_triangle = [| points.(2); new_point; points.(1) |] in
     begin
-        divide (generations - 1) acute_triangle Acute;
-        divide generations obtuse_triangle Obtuse;
+        divideSimple (generations - 1) acute_triangle Acute;
+        divideSimple generations obtuse_triangle Obtuse;
     end
+;;
+
+let divideFancy generations points triangle_type =
+    (* Divide a golden triangle so that the resulting tiling is pleasant to
+        look at, it will also display the triangle that is currently being
+        divided, the triangle is displayed with a grescale that get darker
+        with incresing generations.
+
+        Inside this function, the convention on the order of the vertices
+        of the triangles do not hold, it is easier for us to use the 
+        reverse order *)
+
+    let rec divide generations points triangle_type =
+        if generations <= 0 then
+            draw points (getTriangleColor triangle_type)
+        else
+            match triangle_type with
+                | Obtuse -> divideObtuse generations points
+                | Acute -> divideAcute generations points
+
+    and divideObtuse generations points =
+        (* To have a better tiling we chooses carefully where we divide the
+            triangle and in which order we pass the points to the next divide
+            procedure, follwing an idea from
+            http://images.math.cnrs.fr/Un-parquet-de-Penrose.html?lang=fr#nb3 *)
+        let new_point1 = getDividingPoint points.(0) points.(2) in
+        let new_point2 = getDividingPoint points.(1) points.(2) in
+        let acute_triangle = [| points.(1); new_point2; new_point1 |] in
+        let obtuse_triangle1 = [| points.(1); new_point1; points.(0) |] in
+        let obtuse_triangle2 = [| points.(2); new_point2; new_point1 |] in
+        begin
+            let couleur = greyGradient generations in
+            draw points couleur;
+            divide (generations - 1) acute_triangle Acute ;
+            divide (generations - 1) obtuse_triangle1 Obtuse;
+            divide (generations - 1) obtuse_triangle2 Obtuse
+        end
+
+    and divideAcute generations points =
+        (* This is the same idea as `divideAcute` *)
+        let new_point = getDividingPoint points.(1) points.(2) in
+        let acute_triangle = [|points.(1);  new_point; points.(0)|] in
+        let obtuse_triangle = [| points.(2); new_point; points.(0) |] in
+        begin
+            let couleur = greyGradient generations in
+            draw points couleur;
+            divide (generations - 1) acute_triangle Acute;
+            divide (generations - 1) obtuse_triangle Obtuse;
+        end
+    in
+    let reversed_points = getReverseArray points in 
+    divide generations reversed_points triangle_type
 ;;
 
 let getAcuteTriangle size position =
     (* size is the size of the side with unit length *)
     let height = sqrt (phi *. phi -. 0.25) in
     let shape = [| (size /. 2., height *. size); (size, 0.); (0., 0.) |] in
-    Array.map (add_points position) shape
+    Array.map (add_points position) shape 
 ;;
 
 Graphics.open_graph " 1280x720-0+0";;
-divide 4 (getAcuteTriangle 300. (100., 100.)) Acute;;
-Unix.sleep 2;;
+divideSimple nombre_generations (getAcuteTriangle 300. (100., 100.)) Acute;;
+Unix.sleep 10;;
