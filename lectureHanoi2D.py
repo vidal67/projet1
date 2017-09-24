@@ -2,6 +2,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 
+# This script is use to display the 3D graph of the number of move
+# required to complete the towers of Hanoi in relation to the number
+# of discs to move and the number of picks present
+
 file = open("./hanoi2D.csv")
 
 discs = []
