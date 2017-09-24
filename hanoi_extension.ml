@@ -29,14 +29,14 @@ let drawFilledPolygon points color =
 	Graphics.fill_poly points
 ;;
 
-let should_display = false;;
+(* Variables that configure the display *)
+let should_display = true;;
 let time_between_frame = 0.2 (* In seconds *);;
 let picks_periode = 200;;
 let picks_heights = 300;;
 let disc_minimum_width = 10;;
 let disc_maximum_width = picks_periode / 2;;
 let picks_width = disc_minimum_width / 2;;
-
 let picks_color = Graphics.black;;
 
 let getDiscHeight number_discs = picks_heights / (number_discs + 1);;
@@ -151,6 +151,7 @@ let moveDisc number_discs picks_content origin destination =
         increment_moves_number ();
         if should_display then
             drawState number_discs picks_content;
+        Unix.sleepf time_between_frame
     end
 ;;
 

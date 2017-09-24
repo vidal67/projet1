@@ -27,13 +27,6 @@ for i = number_discs downto 1 do
     Stack.push i arrays.(0);
 done;;
 
-let redrawState () =
-    Graphics.clear_graph ();
-    drawPicks ();
-    drawDiscs arrays;
-    Unix.sleep time_between_frame
-;;
-
 let moves_number = ref 0;;
 let increment_moves_number () = moves_number := !moves_number + 1;;
 
@@ -50,14 +43,14 @@ let moveDisc origin destination =
     end
 ;;
 
-let hanoi n origin destination  =
+let rec hanoi n origin destination other =
     if n = 1 then
-        moveDisc i j
+        moveDisc origin destination
 	else
         begin
-            hanoi (n - 1) i k j;
-            moveDisc i j;
-            hanoi (n - 1) k j i
+            hanoi (n - 1) origin other destination;
+            moveDisc origin destination;
+            hanoi (n - 1) other destination origin
         end
 ;;
 
