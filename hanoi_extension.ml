@@ -241,6 +241,8 @@ let content = ref "discs;picks;moves\n";;
 
 let picks_content = initializeHanoiTower number_picks number_discs;;
 
+(* Generate the number of moves needed to resolve the towers of Hanoi
+    and put them into a string in a csv style *)
 for nbDiscs=3 to number_discs do
 	for nbPick=3 to number_picks do
 		let picks_content = initializeHanoiTower nbPick nbDiscs in
@@ -257,15 +259,3 @@ let () =
 let oc = open_out file in    (* create or truncate file, return channel *)
 fprintf oc "%s\n" !content;   (* write something *)   
 close_out oc;                (* flush and close the channel *)
-
-(* Read file and display the first line *)
-let ic = open_in file in
-try 
-let line = input_line ic in  (* read line from in_channel and discard \n *)
-print_endline line;          (* write the result to stdout *)
-flush stdout;                (* write on the underlying device now *)
-close_in ic                  (* close the input channel *) 
-
-with e ->                      (* some unexpected exception occurs *)
-close_in_noerr ic;           (* emergency closing *)
-raise e
