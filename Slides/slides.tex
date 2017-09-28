@@ -1,0 +1,100 @@
+\documentclass{beamer}
+
+\usepackage[french]{babel}
+\usepackage[utf8]{inputenc}
+%\usepackage[T1]{fontenc}
+\usepackage[french, ruled]{algorithm2e}
+
+\usepackage{graphicx}
+
+\begin{document}
+
+\section{Introduction}
+
+\begin{frame}
+  \frametitle{Partage du travail}
+
+\end{frame}
+
+\section{Tours de Hanoï}
+
+\subsection{Implémentation minimale}
+
+\begin{frame}
+  \frametitle{Implémentation minimale}
+
+\end{frame}
+
+\subsection{Extensions}
+
+\begin{frame}
+  \frametitle{Affichage}
+  \includegraphics[width=\columnwidth]{img/hanoi_display.png}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \resizebox{\columnwidth}{!}{
+      \begin{tabular}{ | c || c || c | }
+        1 & 4 & ~ \\
+        \hline
+        3 & 6 & ~ \\
+        \hline
+        5 & 7 & 2 \\
+        \hline
+      \end{tabular}
+    }
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Tours de Hanoï et plusieurs piques}
+  \begin{algorithm}[H]
+    \caption{Frame-Stewart($n$, $o$, $d$, $P$)}
+    \Entree{$n$ nombre de disques à déplacer, $o$ origine, $d$ destination,
+      $P$ piques libres}
+    Déplacer $\mathrm{k}(n)$ disques de $o$ à un pique de $P$ \\
+    Déplacer $n - \mathrm{k}(n)$ disques de $o$ à $d$ \\
+    Déplacer les $\mathrm{k}(n)$ disques a $d$
+  \end{algorithm}
+\end{frame}
+
+\section{Pavage de Penrose}
+
+\subsection{Implémentation minimal}
+\begin{frame}
+  \frametitle{Implémentation minimal}
+  \begin{columns}
+    \column{0.5\columnwidth}
+      \includegraphics[width=\columnwidth]{img/acute.pdf}
+    \column{0.5\columnwidth}
+      \includegraphics[width=\columnwidth]{img/obtuse.pdf}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \begin{columns}
+    \column{0.5\columnwidth}
+      \includegraphics[width=\columnwidth]{img/obtuse_cut.pdf}
+    \column{0.5\columnwidth}
+      \includegraphics[width=\columnwidth]{img/acute_cut.pdf}
+  \end{columns}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \includegraphics[width=\columnwidth]{img/obtuse_cut_formula.pdf}
+    \[
+      p_3 = p_1 + \frac{1}{1 + \varphi} (p_2 - p_1)
+    \]
+  \end{center}
+\end{frame}
+    
+\subsection{Extensions}
+
+\begin{frame}
+  \frametitle{Un beau pavage}
+
+\end{frame}
+
+\end{document}
