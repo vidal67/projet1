@@ -69,8 +69,8 @@ let add_points point1 point2 =
     (x1 +. x2, y1 +. y2)
 ;;
 
-(* The vertex which have an angle different from the two other vertex of
-    the triangle is put in the first place of the triangle*)
+(* The vertex which have an angle different from the two other vertices of
+    the triangle is put in the first place of the triangle *)
 
 type triangle_type = Obtuse | Acute;;
 

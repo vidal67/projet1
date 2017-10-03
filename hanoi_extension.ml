@@ -10,9 +10,7 @@ struct
 	type 'a t = {mutable elements : 'a list }
 	let create () = { elements = [] }
 	let push x s = s.elements <- x :: s.elements let pop s =
-		match s.elements with
-            | h::t -> s.elements <- t; h
-            | [] -> failwith "Empty stack"
+		match s.elements with | h::t -> s.elements <- t; h | [] -> failwith "Empty stack"
     let underlying_data s = s.elements
     let length s = List.length s.elements
 end;;
@@ -31,27 +29,29 @@ let drawFilledPolygon points color =
 
 (* Variables that configure the display *)
 let should_display = true;;
-let time_between_frame = 0.2 (* In seconds *);;
-let picks_periode = 200;;
-let picks_heights = 300;;
-let disc_minimum_width = 10;;
-let disc_maximum_width = picks_periode / 2;;
+let window_height = 720;;
+let window_width = 1980;;
+let time_between_frame = 0.5 (* In seconds *);;
+let picks_heights = 8 * window_height / 10;;
+let disc_minimum_width = 30;;
 let picks_width = disc_minimum_width / 2;;
 let picks_color = Graphics.black;;
 
+let getPicksPeriode number_picks = window_width / (number_picks + 1);;
+let getDiscMaximumWidth number_picks = getPicksPeriode number_picks / 2;;
 let getDiscHeight number_discs = picks_heights / (number_discs + 1);;
 
-let getNemeDiscWidth number_discs n =
+let getNemeDiscWidth number_discs disc_maximum_width n =
     (* The disc numbers start at 0 *)
     let range = disc_maximum_width - disc_minimum_width in
     let width_slope =  range / (number_discs - 1) in
     (n - 1) * width_slope + disc_minimum_width
 ;;
     
-let getNemeDiscVertices number_discs n =
+let getNemeDiscVertices number_discs disc_maximum_width n =
     (* Return the vertices of the rectangle that represent the neme disc
         if the origin were at the middle of the bottom edge *)
-    let disc_width = getNemeDiscWidth number_discs n in
+    let disc_width = getNemeDiscWidth number_discs disc_maximum_width n in
     let disc_height = getDiscHeight number_discs in
     [|  -disc_width / 2, 0;
         -disc_width / 2, disc_height;
@@ -59,20 +59,23 @@ let getNemeDiscVertices number_discs n =
         disc_width / 2, 0 |]
 ;;
 
-let drawNemeDiscAtPosition number_discs n position =
-    let base_vertices = getNemeDiscVertices number_discs n in
+let drawNemeDiscAtPosition number_discs disc_maximum_width n position =
+    let base_vertices = getNemeDiscVertices number_discs disc_maximum_width n in
     let vertices = Array.map (add_points position) base_vertices in
     Graphics.fill_poly vertices
 ;;
 
-let drawStackOfDisc pick_content number_discs bottom_position =
+let drawStackOfDisc pick_content number_discs disc_maximum_width bottom_position =
     let disc_height = getDiscHeight number_discs in
     let rec aux current_position discs =
         match discs with
             | [] -> ()
             | disc::rst_discs ->
                 let next_position = add_points current_position (0, -disc_height) in
-                drawNemeDiscAtPosition number_discs disc current_position;
+                drawNemeDiscAtPosition number_discs
+                                       disc_maximum_width
+                                       disc
+                                       current_position;
                 aux next_position rst_discs
     in
     (* We retrieve the position of the top disc so that it is easier to
@@ -84,7 +87,8 @@ let drawStackOfDisc pick_content number_discs bottom_position =
     aux top_position (Stack.underlying_data pick_content)
 ;;
 
-let getPickPosition pick = (picks_periode / 2 + picks_periode * pick, 0);;
+let getPickPosition pick picks_periode =
+    (picks_periode / 2 + picks_periode * pick, 0);;
 
 let drawPicks number_picks =
     let picks_vertices = [|
@@ -92,21 +96,28 @@ let drawPicks number_picks =
         picks_width, 0;
         picks_width, picks_heights;
         0, picks_heights |] in 
+    let picks_periode = getPicksPeriode number_picks in
     for pick = 0 to number_picks - 1 do
-        let add_picks_position = add_points (getPickPosition pick) in
-        let current_picks_vertices = Array.map add_picks_position
-                                               picks_vertices
-        in
+        let pick_position = getPickPosition pick picks_periode in
+        let add_picks_position = add_points pick_position in
+        let current_picks_vertices
+            = Array.map add_picks_position picks_vertices in
         drawFilledPolygon current_picks_vertices picks_color
     done
 ;;
 
 let drawDiscs number_discs picks_content=
     (* Draw the disc contained in each stack of the array `picks_content` *)
-    for pick = 0 to Array.length picks_content - 1 do
-        let pick_position = getPickPosition pick in
+    let number_picks = Array.length picks_content in
+    for pick = 0 to number_picks - 1 do
+        let picks_periode = getPicksPeriode number_picks in
+        let pick_position = getPickPosition pick picks_periode in
         let bottom_position = add_points pick_position (picks_width / 2, 0) in
-        drawStackOfDisc picks_content.(pick) number_discs bottom_position
+        let disc_maximum_width = getDiscMaximumWidth number_picks in
+        drawStackOfDisc picks_content.(pick)
+                        number_discs
+                        disc_maximum_width
+                        bottom_position
     done
 ;;
 
@@ -180,24 +191,48 @@ let hanoi number_discs picks_content number_discs_to_move origin destination =
         `number_discs_to_move` discs in 
         `origin` and no disc everywhere else otherwise its behaviour is
         undefined*)
-    let getIntermediateDiscNumber number_discs_to_move number_picks =
+    let rec hanoiFrameStewart number_discs_to_move
+                              intermediate_disc_number
+                              origin
+                              destination
+                              free_picks =
+
+        (* Here, we use Frame-Stewart algorithm as it is believed to be
+            optimal *)
+        let intermediate_destination = List.hd free_picks in
+        let intermediate_free_picks = destination::(List.tl free_picks) in
+        begin
+            aux intermediate_disc_number
+                origin
+                intermediate_destination
+                intermediate_free_picks;
+            aux (number_discs_to_move - intermediate_disc_number)
+                origin
+                destination
+                (List.tl free_picks);
+            aux intermediate_disc_number
+                intermediate_destination
+                destination
+                (origin::List.tl free_picks)
+        end
+    and aux number_discs_to_move origin destination free_picks =
         (* We use the best value of intermediate discs to move for a tower of
             Hanoi with 4 picks, because we don't want to search for the best
             value for other cases *)
-        number_discs_to_move
-            - round (sqrt (float_of_int (2 * number_discs_to_move + 1))) + 1
-    in
-    let rec aux number_discs_to_move origin destination free_picks =
-        let free_picks_number = List.length free_picks in
-        let intermediate_disc_number =
-            getIntermediateDiscNumber number_discs_to_move free_picks_number in 
+        let intermediate_disc_number
+            = number_discs_to_move
+            - round (sqrt (float_of_int (2 * number_discs_to_move + 1))) + 1 in
 
-        (* If the size of the problem is too little i-e we can't move
+        (* If the size of the problem is too little i.e. we can't move
             `intermediate_disc_number` from `origin` or we can't use
             more that one intermediate picks, we use this as our base
-            case *)
-        if List.length free_picks <= 1
-                || number_discs_to_move <= intermediate_disc_number then
+            case *) 
+        let should_use_hanoi_3_picks =
+            List.length free_picks <= 1
+            || number_discs_to_move <= intermediate_disc_number
+        in
+
+        if should_use_hanoi_3_picks then
             hanoi3Picks number_discs
                         picks_content
                         number_discs_to_move
@@ -205,25 +240,12 @@ let hanoi number_discs picks_content number_discs_to_move origin destination =
                         destination
                         (List.hd free_picks)
         else
+            hanoiFrameStewart number_discs_to_move
+                              intermediate_disc_number
+                              origin
+                              destination
+                              free_picks
 
-            (* Here, we use Frame-Stewart algorithm as it is believed to be
-                optimal *)
-            let intermediate_destination = List.hd free_picks in
-            let intermediate_free_picks = destination::(List.tl free_picks) in
-            begin
-                aux intermediate_disc_number
-                    origin
-                    intermediate_destination
-                    intermediate_free_picks;
-                aux (number_discs_to_move - intermediate_disc_number)
-                    origin
-                    destination
-                    (List.tl free_picks);
-                aux intermediate_disc_number
-                    intermediate_destination
-                    destination
-                    (origin::List.tl free_picks)
-            end
     in
     let is_free = fun p -> p <> origin && p <> destination in
     let number_picks = Array.length picks_content in
@@ -231,20 +253,35 @@ let hanoi number_discs picks_content number_discs_to_move origin destination =
     aux number_discs_to_move origin destination free_picks
 ;;
 
-if should_display then
-    Graphics.open_graph " 1280*720-0+0";;
+let createWindowSizeString () =
+    let width_string = string_of_int window_width in
+    let height_string = string_of_int window_height in
+    width_string ^ "*" ^ height_string
+;;
 
-let number_discs = 10;;
+if should_display then
+    let size_string = createWindowSizeString () in
+    Graphics.open_graph (" " ^ size_string ^ "-0+0");;
+
+let number_discs = 20;;
 let number_picks = 5;;
- 
+let start_number_discs = 20;;
+let draw_base_state = false;;
+let wait_after_base_state = 0.;;
+
 let file = "hanoi_extension.csv";;
 let content = ref "discs;picks;moves\n";;
 
 let picks_content = initializeHanoiTower number_picks number_discs;;
 
+if draw_base_state then
+    drawState number_discs picks_content;
+    Unix.sleepf wait_after_base_state
+;;
+
 (* Generate the number of moves needed to resolve the towers of Hanoi
     and put them into a string in a csv style *)
-for nbDiscs=3 to number_discs do
+for nbDiscs = start_number_discs to number_discs do
 	for nbPick=3 to number_picks do
 		let picks_content = initializeHanoiTower nbPick nbDiscs in
 		moves_number := 0 ;
